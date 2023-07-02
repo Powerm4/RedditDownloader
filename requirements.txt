@@ -15,3 +15,4 @@ twitter-text-python==1.1.1
 appdirs==1.4.4
 alembic==1.4.3
 prawcore~=2.0.0
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
