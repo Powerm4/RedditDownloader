@@ -22,10 +22,7 @@ class MultiRedditSource(source.Source):
 
 	def get_config_summary(self):
 		lim = self.data['limit']
-		if lim > 0:
-			lim = 'first %s posts' % lim
-		else:
-			lim = ''
+		lim = f'first {lim} posts' if lim > 0 else ''
 		return 'Downloading %s %s submissions from User  %s\'s multireddit "%s", within "%s" time.' % (
 			lim, self.data['order'], self.data['owner'], self.data['multi_name'], self.data['time']
 		)

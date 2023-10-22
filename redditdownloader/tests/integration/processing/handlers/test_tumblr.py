@@ -9,7 +9,7 @@ class TumblrHandlerTest(StagedTest):
 		""" Attempt Tumblr gallery Download """
 		_task, _prog, _file = mock_handler_request(self.dir, 'https://theshadowmoose.tumblr.com/post/184562233420/test-rmd-image-upload')
 		res = tumblr.handle(_task, _prog)
-		self.assertTrue(res, "Tumblr gallery search failed! %s" % res.failure_reason)
+		self.assertTrue(res, f"Tumblr gallery search failed! {res.failure_reason}")
 		self.assertEqual(len(res.album_urls), 2, "Handler didn't find all gallery URLS!")
 
 	def test_video(self):
@@ -17,7 +17,9 @@ class TumblrHandlerTest(StagedTest):
 		_task, _prog, _file = mock_handler_request(self.dir, 'theshadowmoose.tumblr.com/post/184562318724/another-test-post-with-video')
 		res = tumblr.handle(_task, _prog)
 		self.assertTrue(res, "Tumblr video download failed!")
-		self.assertTrue(_file.exists(), "Tumblr video was not downloaded! %s" % res.failure_reason)
+		self.assertTrue(
+			_file.exists(), f"Tumblr video was not downloaded! {res.failure_reason}"
+		)
 		self.assertTrue(_file.relative().endswith('.mp4'), 'Failed to use .mp4 extension for video file!')
 
 	def test_text_post(self):

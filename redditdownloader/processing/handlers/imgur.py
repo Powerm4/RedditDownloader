@@ -37,16 +37,20 @@ class ImgurAlbumDownloader:
 		self.custom_path = None
 
 		# Read the no-script version of the page for all the images:
-		full_list_url = "https://imgur.com/a/" + self.album_key + "/layout/blog"
+		full_list_url = f"https://imgur.com/a/{self.album_key}/layout/blog"
 
 		html = http_downloader.page_text(full_list_url)
 
 		if not html:
-			raise ImgurAlbumException("Error reading Imgur Album Page: %s" % full_list_url)
+			raise ImgurAlbumException(f"Error reading Imgur Album Page: {full_list_url}")
 
 		self.imageIDs = re.findall(r'.*?{"hash":"([a-zA-Z0-9]+)".*?"ext":"(\.[a-zA-Z0-9]+)".*?', html)
 		seen = set()
-		self.urls = ["https://i.imgur.com/" + x[0] + x[1] for x in self.imageIDs if x not in seen and not seen.add(x)]
+		self.urls = [
+			f"https://i.imgur.com/{x[0]}{x[1]}"
+			for x in self.imageIDs
+			if x not in seen and not seen.add(x)
+		]
 
 	def get_urls(self):
 		return list(self.urls)
@@ -64,7 +68,7 @@ def make_api_client():
 def parse_url(url):
 	url = url.lstrip(':/')
 	if not url.startswith('http'):
-		url = 'https://' + url
+		url = f'https://{url}'
 	return urlp.urlparse(url)
 
 
@@ -86,7 +90,7 @@ def build_direct_link(url):
 		ext = '.png'  # Guess the type: Imgur will auto-resolve to the direct image, even if the extension is wrong.
 	if ext == '.gifv':
 		ext = '.mp4'
-	return urlp.urljoin('https://i.imgur.com/', '%s%s' % (filename, ext))
+	return urlp.urljoin('https://i.imgur.com/', f'{filename}{ext}')
 
 
 def extract_id(url):
@@ -129,7 +133,6 @@ def handle(task, progress):
 				urls = [best(i) for i in items if not getattr(i, 'is_ad', False)]
 			except Exception as e:
 				print('Imgur API:', e)
-				pass  # It's possible an image incorrectly has a Gallery location prepended. Ignore error.
 		if len(urls) == 1:
 			url = urls[0]  # For single-image albums, set up to directly download the image.
 		elif len(urls):
@@ -138,9 +141,11 @@ def handle(task, progress):
 	url = build_direct_link(url)
 	ext, stat = http_downloader.is_media_url(url, return_status=True)  # Do some pre-processing, mostly to screen filetypes.
 	if not ext or stat != 200:
-		return HandlerResponse(success=False,
-							   handler=tag,
-							   failure_reason="Unable to determine imgur filetype: HTTP %s: %s" % (stat, url))
+		return HandlerResponse(
+			success=False,
+			handler=tag,
+			failure_reason=f"Unable to determine imgur filetype: HTTP {stat}: {url}",
+		)
 	if ext in imgur_animation_exts:
 		url = '.'.join(url.split('.')[:-1]) + '.mp4'
 	return http_downloader.download_binary(url, task.file, prog=progress, handler_id=tag)

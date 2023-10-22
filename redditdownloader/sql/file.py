@@ -13,7 +13,7 @@ class File(sql.Base):
 	urls = relationship("URL", back_populates="file")
 
 	def __repr__(self):
-		return '<File ID: %s, Path: "%s", Hash: "%s">' % (self.id, self.path, self.hash)
+		return f'<File ID: {self.id}, Path: "{self.path}", Hash: "{self.hash}">'
 
 
 class Hash(sql.Base):  # TODO: Use this table.
@@ -28,7 +28,7 @@ class Hash(sql.Base):  # TODO: Use this table.
 	p4 = Column(String, index=True)
 
 	def __repr__(self):
-		return '<Hash ID: %s, Full Hash: "%s">' % (self.id, self.full_hash)
+		return f'<Hash ID: {self.id}, Full Hash: "{self.full_hash}">'
 
 	@staticmethod
 	def split_hash(hash_string):
@@ -45,13 +45,12 @@ class Hash(sql.Base):  # TODO: Use this table.
 				file_id=file.id,
 				full_hash=hash_string
 			)
-		else:
-			sp = Hash.split_hash(hash_string)
-			return Hash(
-				file_id=file.id,
-				full_hash=hash_string,
-				p1=sp[0],
-				p2=sp[1],
-				p3=sp[2],
-				p4=sp[3],
-			)
+		sp = Hash.split_hash(hash_string)
+		return Hash(
+			file_id=file.id,
+			full_hash=hash_string,
+			p1=sp[0],
+			p2=sp[1],
+			p3=sp[2],
+			p4=sp[3],
+		)

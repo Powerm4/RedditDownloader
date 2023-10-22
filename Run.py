@@ -9,6 +9,7 @@
 	It will update some often-changing dependencies (YTDL mostly), which lets RMD keep updated with online content changes.
 """
 
+
 import subprocess
 import urllib.request
 import os
@@ -28,17 +29,16 @@ REPO = 'RedditDownloader'
 DATA_BRANCH = 'release-metadata-3.x'
 
 
-UPDATE_URL = 'https://raw.githubusercontent.com/%s/%s/%s/release.json' % (OWNER, REPO, DATA_BRANCH)
-PROJECT_URL = 'https://github.com/%s/%s' % (OWNER, REPO)
+UPDATE_URL = f'https://raw.githubusercontent.com/{OWNER}/{REPO}/{DATA_BRANCH}/release.json'
+PROJECT_URL = f'https://github.com/{OWNER}/{REPO}'
 
-frozen = getattr(sys, 'frozen', False)
 application_path = os.path.abspath(__file__)
-if frozen:
+if frozen := getattr(sys, 'frozen', False):
 	application_path = os.path.abspath(sys.executable)
 fname = basename(application_path)
 base_dir = dirname(application_path)
-backup_path = join(base_dir, 'backup-'+fname)
-check_update = not any('--skip_update' in a for a in sys.argv)
+backup_path = join(base_dir, f'backup-{fname}')
+check_update = all('--skip_update' not in a for a in sys.argv)
 
 
 def resource_path(relative_path):
@@ -84,7 +84,9 @@ def download(url, location, validate_hash=None):
 	try:
 		urllib.request.urlretrieve(url, location)
 		if validate_hash != get_app_hash(location):
-			raise Exception('The downloaded file is malformed, or does not match hashes! %s' % get_app_hash(location))
+			raise Exception(
+				f'The downloaded file is malformed, or does not match hashes! {get_app_hash(location)}'
+			)
 		else:
 			make_executable(location)
 	except Exception as e:
@@ -99,7 +101,7 @@ def download(url, location, validate_hash=None):
 
 def check_standalone_update():
 	system = get_os()
-	print('Checking for a standalone release update for platform %s...' % system)
+	print(f'Checking for a standalone release update for platform {system}...')
 	if not system:
 		print('Error: Unable to determine which OS you are running!', platform.system())
 		raise EnvironmentError('Unsupported platform system!')
@@ -119,11 +121,14 @@ def check_standalone_update():
 	asset_hash = asset['metadata']['sha256']
 	if asset_hash != get_app_hash():
 		print('Hash mismatch! Time to update...', get_app_hash())
-		downloaded = download(asset['browser_download_url'], application_path, asset_hash)
-		if not downloaded:
-			raise RuntimeError('Unable to download update! Check %s for details!' % UPDATE_URL)
-		else:
+		if downloaded := download(
+			asset['browser_download_url'], application_path, asset_hash
+		):
 			return True
+		else:
+			raise RuntimeError(
+				f'Unable to download update! Check {UPDATE_URL} for details!'
+			)
 	return False
 
 
@@ -151,7 +156,7 @@ def make_executable(path):
 
 if __name__ == '__main__':
 	multiprocessing.freeze_support()
-	print('Python %s on %s' % (sys.version, sys.platform))
+	print(f'Python {sys.version} on {sys.platform}')
 	if sys.version_info < (3, 5):
 		print('Error: RMD cannot run on a python version < 3.5. Please update your python installation, or run with "python3".')
 		input("-Press [Enter] to quit-")
@@ -160,8 +165,7 @@ if __name__ == '__main__':
 	if check_update:
 		try:
 			if frozen:
-				updated = check_standalone_update()
-				if updated:
+				if updated := check_standalone_update():
 					print('Update downloaded. Relaunching...')
 					launch_detatched()
 					sys.exit(0)

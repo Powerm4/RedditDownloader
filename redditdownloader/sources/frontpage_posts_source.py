@@ -19,10 +19,5 @@ class FrontpagePostsSource(source.Source):
 
 	def get_config_summary(self):
 		lim = self.data['limit']
-		if lim > 0:
-			lim = 'first %s posts' % lim
-		else:
-			lim = ''
-		return 'Downloading %s %s submissions from your front page, within "%s" time.' % (
-			lim, self.data['order'], self.data['time']
-		)
+		lim = f'first {lim} posts' if lim > 0 else ''
+		return f"""Downloading {lim} {self.data['order']} submissions from your front page, within "{self.data['time']}" time."""

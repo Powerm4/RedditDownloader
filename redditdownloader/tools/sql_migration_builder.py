@@ -39,6 +39,6 @@ if __name__ == '__main__':
 	sql.init_from_settings()
 	# noinspection PyProtectedMember
 	pth = sql._db_path
-	bkup = ('%s-bkup-%s.sqlite' % (pth, str(datetime.now()).replace(':', '.')))
+	bkup = f"{pth}-bkup-{str(datetime.now()).replace(':', '.')}.sqlite"
 	shutil.copy2(pth, bkup)
 	make_migration()

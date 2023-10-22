@@ -21,19 +21,16 @@ def handle(task, progress):
 		return False
 	uid = uid[0]
 
-	files = http_downloader.page_text('https://api.gfycat.com/v1/gfycats/%s' % uid, True)
+	files = http_downloader.page_text(
+		f'https://api.gfycat.com/v1/gfycats/{uid}', True
+	)
 	if not files:
 		return False
 	files = files["gfyItem"]
 
-	opt = None
-	for fm in format_opts:
-		if fm in files and files[fm]:
-			opt = fm
-			break
-
+	opt = next((fm for fm in format_opts if fm in files and files[fm]), None)
 	if not opt:
 		return False
 
-	progress.set_status("Downloading gfycat %s..." % opt)
+	progress.set_status(f"Downloading gfycat {opt}...")
 	return http_downloader.download_binary(files[opt], task.file, prog=progress, handler_id=tag)

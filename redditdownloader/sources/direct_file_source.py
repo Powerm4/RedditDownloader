@@ -33,11 +33,9 @@ class DirectFileSource(Source):
 						else:
 							comments.append(row['id'])
 				if len(comments):
-					for e in self.get_comments(comments):
-						yield e
+					yield from self.get_comments(comments)
 				if len(subs):
-					for e in self.get_subs(subs):
-						yield e
+					yield from self.get_subs(subs)
 				if not len(comments) and not len(subs):
 					break
 
@@ -54,7 +52,7 @@ class DirectFileSource(Source):
 			comments = list(filter(lambda c: c.replace('t1_', '', 1) != com.id.replace('t1_', '', 1), comments))
 			yield RedditElement(com, ext_submission_obj=s)
 		if self.data['slow_fallback'] and len(comments):
-			for comm in get_info(['t1_'+c for c in comments]):
+			for comm in get_info([f't1_{c}' for c in comments]):
 				yield RedditElement(comm)
 
 	def get_subs(self, subs):
@@ -64,8 +62,8 @@ class DirectFileSource(Source):
 			if self.check_filters(p):
 				yield p
 		if self.data['slow_fallback'] and len(subs):
-			for comm in get_info(['t3_'+c for c in subs]):
+			for comm in get_info([f't3_{c}' for c in subs]):
 				yield RedditElement(comm)
 
 	def get_config_summary(self):
-		return 'Reading from CSV "%s". Using slow direct backup: %s' % (self.data['file'], self.data['slow_fallback'])
+		return f"""Reading from CSV "{self.data['file']}". Using slow direct backup: {self.data['slow_fallback']}"""

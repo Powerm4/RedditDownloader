@@ -34,8 +34,7 @@ def get_reddit_token_url():
 def get_refresh_token(code):
 	init()
 	try:
-		refresh_token = _reddit.auth.authorize(code)
-		return refresh_token
+		return _reddit.auth.authorize(code)
 	except Exception as ex:
 		print(ex)
 		return False
@@ -52,10 +51,10 @@ def init():
 	_reddit = praw.Reddit(
 		client_id=settings.get('auth.rmd_client_key'),
 		client_secret=None,
-		redirect_uri='http://%s:%s/authorize' % ('localhost', '7505'),
+		redirect_uri='http://localhost:7505/authorize',
 		user_agent=settings.get('auth.user_agent'),
 		refresh_token=refresh,
-		check_for_updates=False
+		check_for_updates=False,
 	)
 
 
@@ -112,17 +111,18 @@ def user_liked_saved(username, scan_upvoted=True, scan_saved=True, scan_sub=None
 			redditor = _reddit.redditor(username)
 		if scan_saved:
 			for saved in redditor.saved(limit=None, params=params):
-				re = RedditElement(saved)
-				yield re
-
+				yield RedditElement(saved)
 		if scan_upvoted:
 			for upvoted in redditor.upvoted(limit=None, params=params):
-				re = RedditElement(upvoted)
-				yield re
+				yield RedditElement(upvoted)
 	except prawcore.exceptions.NotFound:
-		stringutil.error('Cannot locate comments or submissions for nonexistent user: %s' % username)
+		stringutil.error(
+			f'Cannot locate comments or submissions for nonexistent user: {username}'
+		)
 	except prawcore.Forbidden:
-		stringutil.error('Cannot load Upvoted/Saved Posts from the User "%s", because they are private!' % username)
+		stringutil.error(
+			f'Cannot load Upvoted/Saved Posts from the User "{username}", because they are private!'
+		)
 
 
 @check_login
@@ -148,9 +148,13 @@ def user_posts(username, find_submissions, find_comments):
 			for c in _reddit.redditor(username).submissions.new():
 				yield RedditElement(c)
 	except prawcore.exceptions.NotFound:
-		stringutil.error('Cannot locate comments or submissions for nonexistent user: %s' % username)
+		stringutil.error(
+			f'Cannot locate comments or submissions for nonexistent user: {username}'
+		)
 	except prawcore.exceptions.Forbidden:
-		stringutil.error('Cannot locate posts from a suspended user account: %s' % username)
+		stringutil.error(
+			f'Cannot locate posts from a suspended user account: {username}'
+		)
 
 
 @check_login
@@ -177,7 +181,7 @@ def get_submission_comments(t3_id):
 @check_login
 def get_submission(t3_id):
 	if not t3_id.startswith('t3_'):
-		raise Exception('Invalid submission id: %s' % t3_id)
+		raise Exception(f'Invalid submission id: {t3_id}')
 	t3_id = t3_id.replace('t3_', '', 1)  # Convert to expected format.
 	return _reddit.submission(id=t3_id)
 
@@ -185,7 +189,7 @@ def get_submission(t3_id):
 @check_login
 def get_comment(t1_id):
 	if not t1_id.startswith('t1_'):
-		raise Exception('Invalid Comment id: %s' % t1_id)
+		raise Exception(f'Invalid Comment id: {t1_id}')
 	t1_id = t1_id.replace('t1_', '', 1)  # Convert to expected format.
 	return _reddit.comment(id=t1_id)
 
@@ -208,7 +212,7 @@ def _praw_apply_filter(praw_object, order_by='new', limit=None, time='all'):
 		order_by = 'top'
 		time = 'day'
 	order = [o for o in post_orders() if o[0] == order_by]
-	assert len(order) > 0  # The order must be a valid value.
+	assert order
 	assert time in time_filters()
 	if limit < 1:
 		limit = None
@@ -221,6 +225,6 @@ def _praw_apply_filter(praw_object, order_by='new', limit=None, time='all'):
 		for g in gen:
 			yield RedditElement(g)
 	except TypeError as e:
-		stringutil.error('Invalid Praw order configuration! [%s]' % order_by)
+		stringutil.error(f'Invalid Praw order configuration! [{order_by}]')
 		print(order)
 		print(e)

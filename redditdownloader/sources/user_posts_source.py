@@ -25,7 +25,7 @@ class UserPostsSource(source.Source):
 		if self.data['scan_comments']:
 			feeds += "Comments"
 		if self.data['scan_submissions']:
-			if len(feeds) > 0:
+			if feeds != "":
 				feeds += " & "
 			feeds += "Submissions"
-		return "Scanning User (%s)'s %s." % (self.data['user'], feeds)
+		return f"Scanning User ({self.data['user']})'s {feeds}."

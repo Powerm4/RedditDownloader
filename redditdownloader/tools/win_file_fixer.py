@@ -34,14 +34,13 @@ def repair_subdirs(parent):
 		d = os.path.abspath(d)
 		filename = os.path.basename(d.rstrip('/\\'))
 		parent = os.path.dirname(d)
-		new_file = parent+'/'+filename.strip().rstrip(' .-')
+		new_file = f'{parent}/' + filename.strip().rstrip(' .-')
 		# noinspection PyBroadException
 		try:
 			os.rename(short, new_file)
-			print("Renamed file: [%s]  ->  [%s]  (Short: %s)" % (d, new_file, short))
+			print(f"Renamed file: [{d}]  ->  [{new_file}]  (Short: {short})")
 		except Exception:
 			print("Hit error renaming directory: ", d)
-			pass
 
 
 if __name__ == '__main__':
@@ -59,7 +58,7 @@ if __name__ == '__main__':
 	if 'y' in input('Are you sure you want to run this? (y/n): ').lower():
 		targ = input('Enter the EXACT PATH to the base directory you want scanned: ')
 		targ = os.path.abspath(targ)
-		if 'y' in input('Is the path "%s" correct? (y/n): ' % targ).lower():
+		if 'y' in input(f'Is the path "{targ}" correct? (y/n): ').lower():
 			repair_subdirs(targ)
 		else:
 			print("Aborted run.")

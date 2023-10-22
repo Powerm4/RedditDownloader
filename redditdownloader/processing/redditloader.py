@@ -103,7 +103,9 @@ class RedditLoader(multiprocessing.Process):
 	def _create_album_urls(self, urls, post, album_key):
 		""" Generates URL objects for Album URLs. """
 		if not post:
-			raise ValueError("The given Post does not exist - cannot generate Album URL: %s" % post)
+			raise ValueError(
+				f"The given Post does not exist - cannot generate Album URL: {post}"
+			)
 		new_urls = []
 		for idx, u in enumerate(urls):
 			url = sql.URL.make_url(address=u, post=post, album_key=album_key, album_order=idx+1)

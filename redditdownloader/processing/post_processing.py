@@ -49,12 +49,13 @@ class Deduplicator(multiprocessing.Process):
 			sql.close()
 
 	def _dedupe(self):
-		unfinished = self._session\
-			.query(File) \
-			.options(joinedload(File.urls))\
-			.filter(File.hash == None)\
-			.filter(File.downloaded == True)\
+		unfinished = (
+			self._session.query(File)
+			.options(joinedload(File.urls))
+			.filter(File.hash is None)
+			.filter(File.downloaded == True)
 			.all()
+		)
 
 		unfinished = list(filter(lambda _f: not any(u.album_id for u in _f.urls), unfinished))  # Filter out albums.
 
@@ -62,7 +63,7 @@ class Deduplicator(multiprocessing.Process):
 			return
 
 		for idx, f in enumerate(unfinished):
-			self.progress.set_status("Deduplicating (%s) files..." % (len(unfinished) - idx))
+			self.progress.set_status(f"Deduplicating ({len(unfinished) - idx}) files...")
 			path = SanitizedRelFile(base=settings.get("output.base_dir"), file_path=f.path)
 			is_album = any(u.album_id for u in f.urls)
 			if not path.is_file() or is_album or self._stop_event.is_set():
@@ -104,9 +105,7 @@ class Deduplicator(multiprocessing.Process):
 		"""
 		if not file.hash or any(u.album_id or not u.processed for u in file.urls):
 			return False
-		if FileHasher.hamming_distance(search_hash, file.hash.full_hash) >= 4:
-			return False
-		return True
+		return FileHasher.hamming_distance(search_hash, file.hash.full_hash) < 4
 
 	def _choose_best_file(self, files):
 		files = sorted(

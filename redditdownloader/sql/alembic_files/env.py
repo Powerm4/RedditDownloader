@@ -53,8 +53,7 @@ def run_migrations_online():
     """
     ini_section = config.get_section(config.config_ini_section)
 
-    db_path = context.get_x_argument(as_dictionary=True).get('dbPath')
-    if db_path:
+    if db_path := context.get_x_argument(as_dictionary=True).get('dbPath'):
         ini_section['sqlalchemy.url'] += db_path
 
     connectable = config.attributes.get('connection', None)

@@ -21,7 +21,7 @@ class Post(sql.Base):
 	source_alias = Column(String)
 
 	def __repr__(self):
-		return '<Post ID: %s, Author: "%s", URLs: "%s">' % (self.reddit_id, self.author, len(self.urls))
+		return f'<Post ID: {self.reddit_id}, Author: "{self.author}", URLs: "{len(self.urls)}">'
 
 	@staticmethod
 	def convert_element_to_post(re):

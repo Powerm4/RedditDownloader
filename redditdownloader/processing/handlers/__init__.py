@@ -32,12 +32,10 @@ def handle(handler_task, progress_obj):
 	for h in sorted_list():
 		try:
 			progress_obj.set_handler(h.tag)
-			result = h.handle(task=handler_task, progress=progress_obj)
-			if result:
+			if result := h.handle(task=handler_task, progress=progress_obj):
 				return result
 		except Exception as ex:  # There are too many possible exceptions between all handlers to catch properly.
 			stringutil.error('Handler Exception [%s] :: {%s} :: %s' % (h.tag, handler_task.url, ex))
 			# We don't *really* care if a Handler fails, since there are plenty of reasons a download could.
 			traceback.print_exc()
-			pass
 	return HandlerResponse(success=False, handler=None, failure_reason="No Handlers could process this URL.")

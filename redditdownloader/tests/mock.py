@@ -24,7 +24,7 @@ class StagedTest(unittest.TestCase):
 	def setUpClass(cls):
 		importlib.reload(settings)
 		importlib.reload(sql)
-		randname = 'rmd-test-%s' % uuid.uuid4()
+		randname = f'rmd-test-{uuid.uuid4()}'
 		cls.dir = os.path.abspath(os.path.join(gettempdir(), randname))
 		os.makedirs(cls.dir)
 		if not cls.dir or not os.path.isdir(cls.dir):
@@ -42,7 +42,7 @@ class StagedTest(unittest.TestCase):
 		""" Generate a temporary filepath scoped within this temp directory. """
 		ext = ext if ext else ""
 		filename = filename if filename else str(uuid.uuid4())
-		return os.path.join(self.dir, "%s.%s" % (filename, ext))
+		return os.path.join(self.dir, f"{filename}.{ext}")
 
 
 class EnvironmentTest(StagedTest):
@@ -56,11 +56,13 @@ class EnvironmentTest(StagedTest):
 	@classmethod
 	def setUpClass(cls):
 		super().setUpClass()
-		src = os.path.abspath(os.path.join(os.path.dirname(__file__), './envs', '%s.zip' % cls.env))
+		src = os.path.abspath(
+			os.path.join(os.path.dirname(__file__), './envs', f'{cls.env}.zip')
+		)
 		if not cls.env:
 			raise Exception('Environment name is not set for this EnvironmentTest!')
 		if not os.path.isfile(src):
-			raise Exception('Unknown env file: %s' % src)
+			raise Exception(f'Unknown env file: {src}')
 		zip_ref = zipfile.ZipFile(src, 'r')
 		zip_ref.extractall(cls.dir)  # Extract zip archive.
 		zip_ref.close()
@@ -72,8 +74,8 @@ class EnvironmentTest(StagedTest):
 			txt = txt.replace('[TEST_DIR]', json.dumps(cls.dir))
 			txt = txt.replace('[REFRESH_TOKEN]', json.dumps(os.environ['RMD_REFRESH_TOKEN']))
 			for k in ['RMD_IMGUR_ID', 'RMD_IMGUR_SECRET']:
-				val = os.environ[k] if k in os.environ else ''
-				txt = txt.replace('[%s]' % k, json.dumps(val))
+				val = os.environ.get(k, '')
+				txt = txt.replace(f'[{k}]', json.dumps(val))
 			with open(js, 'w') as o:
 				o.write(txt)
 

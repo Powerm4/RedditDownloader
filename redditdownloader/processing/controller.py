@@ -77,7 +77,7 @@ class RMDController(threading.Thread):
 
 	def _create_downloaders(self):
 		dls = []  # type: [Downloader]
-		for i in range(settings.get('threading.concurrent_downloads')):
+		for _ in range(settings.get('threading.concurrent_downloads')):
 			tp = Downloader(
 				reader=self.loader.get_reader(),
 				ack_queue=self.loader.get_ack_queue(),
@@ -102,7 +102,7 @@ class RMDController(threading.Thread):
 						print('Matched Source: ', s.get_alias())
 						sources.append(s)
 						break
-		if len(sources) == 0:
+		if not sources:
 			if len(settings_sources) == 0:
 				su.error('No sources were found from the settings file.')
 			else:

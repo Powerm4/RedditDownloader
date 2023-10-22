@@ -11,7 +11,7 @@ class PSAWTest(unittest.TestCase):
 		re = RedditElement(post)
 		self.assertEqual(len(re.get_urls()), 3, msg='Got incorrect image count from PSAW gallery submission!')
 		for url in re.get_urls():
-			self.assertIn('https', url, msg='Failed to extract valid gallery URL: %s' % url)
+			self.assertIn('https', url, msg=f'Failed to extract valid gallery URL: {url}')
 
 	def test_missing_author(self):
 		""" Really old posts should still work without old author data """

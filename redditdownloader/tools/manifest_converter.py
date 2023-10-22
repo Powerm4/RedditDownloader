@@ -43,7 +43,9 @@ class PendingPost:
 		self.ele = RedditElement(reddit_ele) if reddit_ele else None
 
 	def __str__(self):
-		return "<Post ID: %s, Files: %s, Ele: %s>" % (self.reddit_id, self.files, True if self.ele else False)
+		return (
+			f"<Post ID: {self.reddit_id}, Files: {self.files}, Ele: {bool(self.ele)}>"
+		)
 
 
 class FailedPost(dict):
@@ -78,9 +80,9 @@ class GZManifest:
 		for c in ps.search_comments(link_id=e['id']):
 			comp = len([u for u in e['urls'] if u in html.unescape(c.body)])
 			if str(c.author.lower() == e['author'].lower()):
-				comp = comp * 10
+				comp *= 10
 			if comp > best[0]:
-				best = (comp, 't1_%s' % c.id)
+				best = comp, f't1_{c.id}'
 		return best[1]
 
 	def convert(self):
@@ -98,10 +100,16 @@ class GZManifest:
 			if e['type'] == 'Comment':
 				idx += 1
 				e['parent'] = e['id']  # Previous versions used Parent ID instead of their own.
-				print("Searching for Comment: %s (%s/%s)" % (e['id'], idx, comment_count), end='\r', flush=True)
+				print(
+					f"Searching for Comment: {e['id']} ({idx}/{comment_count})",
+					end='\r',
+					flush=True,
+				)
 				com = self.find_comment(e)
 				if not com:
-					print('Could not match old legacy Comment; It will be re-downloaded. [%s]' % e['id'])
+					print(
+						f"Could not match old legacy Comment; It will be re-downloaded. [{e['id']}]"
+					)
 					self.failed.append(FailedPost(e['id'], e['title'], e['files'], "Comment ID could not be converted from parent"))
 					continue
 				e['id'] = com
@@ -184,11 +192,11 @@ class Converter:
 		self.session = sql.session()
 		print("Scanning legacy posts...")
 		self.scan()
-		print("Found %s elements total." % len(self.posts.keys()))
+		print(f"Found {len(self.posts.keys())} elements total.")
 		self.process_posts()
 		self.session.commit()
 		print("\n\nProcessed:", len(self.posts), "Posts.")
-		print("Failed to convert %s Posts." % len(self.failures))
+		print(f"Failed to convert {len(self.failures)} Posts.")
 		outfile = os.path.join(self.new_save_base, 'failed_conversion_posts.json')
 		with open(outfile, 'w') as o:
 			o.write(json.dumps(self.failures, indent=4, sort_keys=True, separators=(',', ': ')))
@@ -202,7 +210,7 @@ class Converter:
 				self.posts[_e.reddit_id] = _e
 			print("Failed GZ conversions:", len(self.gz.failed))
 			self.failures.extend(self.gz.failed)
-			print("Found %s elements from GZ Archive." % len(self.posts))
+			print(f"Found {len(self.posts)} elements from GZ Archive.")
 		if self.sqlite_path:
 			self.sqlite = SQLDBManifest(self.sqlite_path)
 			for _e in self.sqlite.convert():
@@ -222,20 +230,29 @@ class Converter:
 		comments = [p.reddit_id for p in self.posts.values() if p.reddit_id.startswith('t1_')]
 
 		submissions = [RedditElement(s) for s in batch_submission_lookup(submissions)]
-		comments = [c for c in batch_comment_lookup(comments)]
+		comments = list(batch_comment_lookup(comments))
 
 		for idx, pend in enumerate(self.posts.values()):
 			r = pend.ele
 			if not r:
 				try:
-					found = [re for re in submissions+comments if re.id == pend.reddit_id]
-					if not found:
+					if found := [
+						re for re in submissions + comments if re.id == pend.reddit_id
+					]:
+						r = found[0]
+					else:
 						raise Exception('Unable to locate via PushShift!')
-					r = found[0]
 				except Exception as ex:
-					self.failures.append(FailedPost(pend.reddit_id, pend.title, pend.files, reason="Error parsing: %s" % ex))
+					self.failures.append(
+						FailedPost(
+							pend.reddit_id,
+							pend.title,
+							pend.files,
+							reason=f"Error parsing: {ex}",
+						)
+					)
 					continue
-			r.source_alias = pend.source + '-imported'
+			r.source_alias = f'{pend.source}-imported'
 			post = self.session.query(sql.Post).filter(sql.Post.reddit_id == r.id).first()
 			if not post:
 				post = sql.Post.convert_element_to_post(r)
@@ -276,10 +293,7 @@ class Converter:
 			sql_url.failed = not has_file
 			sql_url.processed = has_file
 			sql_url.last_handler = 'legacy-importer'
-			if not has_file:
-				sql_url.failure_reason = 'Unable to convert from legacy.'
-			else:
-				sql_url.failure_reason = None
+			sql_url.failure_reason = None if has_file else 'Unable to convert from legacy.'
 			self.session.add(sql_url)
 			post.urls.append(sql_url)
 			file = self.create_url_file(sql_url=sql_url, sql_post=post, album_size=len(files), downloaded=has_file)
@@ -325,19 +339,17 @@ class Converter:
 def batch_submission_lookup(submission_ids):
 	chunks = [submission_ids[x:x + ps_query_size] for x in range(0, len(submission_ids), ps_query_size)]
 	for idx, ch in enumerate(chunks):
-		print("Scanning Submissions... Batch: %s/%s" % (idx+1, len(chunks)))
-		for sub in ps.search_submissions(limit=len(ch), ids=[c for c in ch]):
-			yield sub
+		print(f"Scanning Submissions... Batch: {idx + 1}/{len(chunks)}")
+		yield from ps.search_submissions(limit=len(ch), ids=list(ch))
 
 
 def batch_comment_lookup(comments):
 	chunks = [comments[x:x+ps_query_size] for x in range(0, len(comments), ps_query_size)]
 	found = []
 	for idx, ch in enumerate(chunks):
-		print("Scanning comments... Batch: %s/%s" % (idx+1, len(chunks)))
-		for com in ps.search_comments(limit=len(ch), ids=[c for c in ch]):
-			found.append(com)
-	subs = [s for s in batch_submission_lookup([c.link_id for c in found])]
+		print(f"Scanning comments... Batch: {idx + 1}/{len(chunks)}")
+		found.extend(iter(ps.search_comments(limit=len(ch), ids=list(ch))))
+	subs = list(batch_submission_lookup([c.link_id for c in found]))
 	for s in subs:
 		search = list(filter(lambda c: c.link_id.replace('t3_', '', 1) == s.id, found))
 		if not search:

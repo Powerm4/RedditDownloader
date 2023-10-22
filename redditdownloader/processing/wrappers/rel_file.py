@@ -50,9 +50,7 @@ class RelFile:
 		return op.isfile(self.absolute())
 
 	def size(self):
-		if not self.is_file():
-			return 0
-		return op.getsize(self.absolute())
+		return 0 if not self.is_file() else op.getsize(self.absolute())
 
 	def delete_file(self, recursive_cleanup=True):
 		if recursive_cleanup:
@@ -76,7 +74,7 @@ class RelFile:
 		ext = (''.join([c for c in ext if c.isalnum()])).strip()
 		if not ext:
 			ext = '.unknown'
-		self._path += '.%s' % ext
+		self._path += f'.{ext}'
 
 	def mkdirs(self):
 		"""

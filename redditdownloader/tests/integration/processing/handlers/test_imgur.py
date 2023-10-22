@@ -36,7 +36,11 @@ class ImgurHandlerTest(StagedTest):
 		}
 		for url, valid in test_urls.items():
 			clean = imgur.is_imgur(url)
-			self.assertEqual(valid, bool(clean), "Imgur improperly handled a test URL: [%s]->(%s)" % (url, clean))
+			self.assertEqual(
+				valid,
+				bool(clean),
+				f"Imgur improperly handled a test URL: [{url}]->({clean})",
+			)
 
 	@unittest.skipIf('GITHUB_ACTION' in os.environ, "Cannot reliably test imgur albums on GitHub's internet.")
 	def test_gallery(self):
@@ -44,7 +48,9 @@ class ImgurHandlerTest(StagedTest):
 		_task, _prog, _file = mock_handler_request(self.dir, 'https://imgur.com/gallery/plN58')
 		res = imgur.handle(_task, _prog)
 		self.assertTrue(res, "Imgur gallery search failed!")
-		self.assertTrue(res.success, "Imgur gallery failed to download: %s" % res.failure_reason)
+		self.assertTrue(
+			res.success, f"Imgur gallery failed to download: {res.failure_reason}"
+		)
 		self.assertEqual(len(res.album_urls), 134, "Handler didn't find all gallery URLS!")
 
 	def test_invalid_album(self):
@@ -52,7 +58,10 @@ class ImgurHandlerTest(StagedTest):
 		_task, _prog, _file = mock_handler_request(self.dir, 'https://imgur.com/a/KEVkAWf')
 		res = imgur.handle(_task, _prog)
 		self.assertTrue(res, "Imgur album download failed!")
-		self.assertTrue(_file.exists(), "Imgur album animation was not downloaded! %s" % res.failure_reason)
+		self.assertTrue(
+			_file.exists(),
+			f"Imgur album animation was not downloaded! {res.failure_reason}",
+		)
 		self.assertIn('.mp4', _file.relative(), "Imgur downloaded the wrong animation format from album!")
 
 	def test_direct_png(self):
@@ -60,7 +69,9 @@ class ImgurHandlerTest(StagedTest):
 		_task, _prog, _file = mock_handler_request(self.dir, 'https://i.imgur.com/8770jp0.png')
 		res = imgur.handle(_task, _prog)
 		self.assertTrue(res, "Imgur png download failed!")
-		self.assertTrue(_file.exists(), "Imgur png was not downloaded! %s" % res.failure_reason)
+		self.assertTrue(
+			_file.exists(), f"Imgur png was not downloaded! {res.failure_reason}"
+		)
 		self.assertIn('.png', _file.relative(), "Imgur png is missing extension!")
 
 	def test_indirect_link(self):
@@ -68,7 +79,10 @@ class ImgurHandlerTest(StagedTest):
 		_task, _prog, _file = mock_handler_request(self.dir, 'https://i.imgur.com/8770jp0')
 		res = imgur.handle(_task, _prog)
 		self.assertTrue(res, "Imgur indirect png download failed!")
-		self.assertTrue(_file.exists(), "Imgur indirect png was not downloaded! %s" % res.failure_reason)
+		self.assertTrue(
+			_file.exists(),
+			f"Imgur indirect png was not downloaded! {res.failure_reason}",
+		)
 		self.assertIn('.png', _file.relative(), "Imgur indirect image is missing png extension!")
 
 	def test_gif(self):
@@ -76,7 +90,9 @@ class ImgurHandlerTest(StagedTest):
 		_task, _prog, _file = mock_handler_request(self.dir, 'imgur.com/r/gifs/jIuIbIu')
 		res = imgur.handle(_task, _prog)
 		self.assertTrue(res, "Imgur gif download failed!")
-		self.assertTrue(_file.exists(), "Imgur gif was not downloaded! %s" % res.failure_reason)
+		self.assertTrue(
+			_file.exists(), f"Imgur gif was not downloaded! {res.failure_reason}"
+		)
 		self.assertTrue(_file.relative().endswith('.mp4'), 'Failed to use .mp4 extension for .gif file!')
 
 	def test_gifv(self):
@@ -84,5 +100,7 @@ class ImgurHandlerTest(StagedTest):
 		_task, _prog, _file = mock_handler_request(self.dir, 'https://imgur.com/MVPdV4a')
 		res = imgur.handle(_task, _prog)
 		self.assertTrue(res, "Imgur gifv download failed!")
-		self.assertTrue(_file.exists(), "Imgur gifv was not downloaded! %s" % res.failure_reason)
+		self.assertTrue(
+			_file.exists(), f"Imgur gifv was not downloaded! {res.failure_reason}"
+		)
 		self.assertTrue(_file.relative().endswith('.mp4'), 'Failed to use .mp4 extension for .gifv file!')
