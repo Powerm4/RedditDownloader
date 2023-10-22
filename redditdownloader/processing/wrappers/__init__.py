@@ -32,10 +32,14 @@ class Progress:
 
 	def set(self, field, value):
 		if isinstance(value, str) and len(value) > (self.field_size - 2):
-			value = value[:self.field_size - 5].strip() + '...'
+			value = f'{value[:self.field_size - 5].strip()}...'
 		value = json.dumps(value)
 		if len(value) > self.field_size:
-			value = json.dumps(("[META: Encoding Error: %s.%s]" % (self.__class__.__name__, field))[:self.field_size-2])
+			value = json.dumps(
+				f"[META: Encoding Error: {self.__class__.__name__}.{field}]"[
+					: self.field_size - 2
+				]
+			)
 		self.fields[field].value = value.encode(errors='replace')
 		return True
 

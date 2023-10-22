@@ -8,7 +8,9 @@ class GfycatTest(StagedTest):
 		_task, _prog, _file = mock_handler_request(self.dir, 'https://gfycat.com/heftyinnocentelephantbeetle')
 		res = gfycat.handle(_task, _prog)
 		self.assertTrue(res, "gfycat webm download failed!")
-		self.assertTrue(_file.exists(), "gfycat webm was not downloaded! %s" % res.failure_reason)
+		self.assertTrue(
+			_file.exists(), f"gfycat webm was not downloaded! {res.failure_reason}"
+		)
 		self.assertIn('.webm', _file.relative(), "gfycat webm is missing extension!")
 
 	def test_invalid_url(self):
@@ -37,7 +39,9 @@ class GfycatTest(StagedTest):
 		_task, _prog, _file = mock_handler_request(self.dir, 'https://zippy.gfycat.com/DampAltruisticGangesdolphin.webm')
 		res = gfycat.handle(_task, _prog)
 		self.assertTrue(res, "gfycat webm download failed!")
-		self.assertTrue(_file.exists(), "gfycat webm was not downloaded! %s" % res.failure_reason)
+		self.assertTrue(
+			_file.exists(), f"gfycat webm was not downloaded! {res.failure_reason}"
+		)
 		self.assertIn('.webm', _file.relative(), "gfycat webm is missing extension!")
 
 	def test_decorated(self):
@@ -45,6 +49,8 @@ class GfycatTest(StagedTest):
 		_task, _prog, _file = mock_handler_request(self.dir, 'https://gfycat.com/ripemadintermediateegret-hi-bye-sad-nba')
 		res = gfycat.handle(_task, _prog)
 		self.assertTrue(res, "gfycat webm download failed!")
-		self.assertTrue(_file.exists(), "gfycat webm was not downloaded! %s" % res.failure_reason)
+		self.assertTrue(
+			_file.exists(), f"gfycat webm was not downloaded! {res.failure_reason}"
+		)
 		self.assertIn('.webm', _file.relative(), "gfycat webm is missing extension!")
 

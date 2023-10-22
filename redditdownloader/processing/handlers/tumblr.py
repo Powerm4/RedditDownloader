@@ -16,7 +16,7 @@ def _iprop(ele, ele_tag, default=99999):
 
 
 def get_media_urls(base, post_id):
-	url = 'https://%s.tumblr.com/api/read?id=%s' % (base, post_id)
+	url = f'https://{base}.tumblr.com/api/read?id={post_id}'
 	data = http_downloader.open_request(url, stream=False)
 	if not data or data.status_code != 200:
 		return []
@@ -27,13 +27,11 @@ def get_media_urls(base, post_id):
 	for vid in post.findall('video-player'):
 		ht = html.unescape(vid.text)
 		ve = lxhtml.fromstring(ht)
-		if vid.get('max-width') and len(found) > 0:
+		if vid.get('max-width') and found:
 			continue  # Skip videos with this dimension if we've already found the base link.
 		if ve.get('src'):
 			found.append(ve.get('src').strip())
-		for src in ve.findall('source'):
-			found.append(src.get('src').strip())
-
+		found.extend(src.get('src').strip() for src in ve.findall('source'))
 	photo_eles = []
 	if post.find('.//photoset') is None:
 		photo_eles.append(post)
@@ -47,11 +45,10 @@ def get_media_urls(base, post_id):
 	captions = filter(lambda x: x is not None, [post.find(s) for s in ['.//video-caption', './/photo-caption']])
 	for c in captions:
 		capt = lxhtml.fromstring(html.unescape(c.text))
-		for img in capt.findall('.//img'):
-			if img.get('src'):
-				found.append(img.get('src'))
-	distinct = list(OrderedDict.fromkeys(found).keys())  # Time to deduplicate all the located media URLs.
-	return distinct
+		found.extend(
+			img.get('src') for img in capt.findall('.//img') if img.get('src')
+		)
+	return list(OrderedDict.fromkeys(found).keys())
 
 
 def handle(task, progress):
@@ -62,12 +59,14 @@ def handle(task, progress):
 	progress.set_status("Parsing Tumblr page...")
 	# noinspection PyBroadException
 	try:
-		urls = get_media_urls(gr[0], gr[1])
-		if not urls:
+		if urls := get_media_urls(gr[0], gr[1]):
+			return (
+				HandlerResponse(success=True, handler=tag, album_urls=urls)
+				if len(urls) > 1
+				else http_downloader.download_binary(urls[0], task.file, progress, tag)
+			)
+		else:
 			return None
-		if len(urls) > 1:
-			return HandlerResponse(success=True, handler=tag, album_urls=urls)
-		return http_downloader.download_binary(urls[0], task.file, progress, tag)
 	except Exception as ex:
 		# print('Tumblr: ERROR:', ex, task.url, file=sys.stderr, flush=True)
 		return False

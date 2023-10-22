@@ -59,9 +59,11 @@ class SettingsTest(EnvironmentTest):
 		""" Removing sources should work """
 		ob = settings.to_obj(save_format=False, include_private=True)
 		for s in settings.get_all():
-			self.assertIn(s.category, ob, msg='Category "%s" is missing from Object!' % s.category)
+			self.assertIn(
+				s.category, ob, msg=f'Category "{s.category}" is missing from Object!'
+			)
 			found = [cs for cs in ob[s.category] if cs['name'] == s.name]
-			self.assertTrue(found, msg='Setting "%s" is missing from Object!' % s.name)
+			self.assertTrue(found, msg=f'Setting "{s.name}" is missing from Object!')
 
 	def test_conversion(self):
 		""" Settings should cast values correctly """

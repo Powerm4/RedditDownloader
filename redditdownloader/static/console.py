@@ -20,7 +20,7 @@ def number(prompt, min_num=None, max_num=None, round_val=True):
 	:return: The value chosen, or none.
 	"""
 	while True:
-		text = col_input("%s: " % prompt)
+		text = col_input(f"{prompt}: ")
 		if not stringutil.is_numeric(text):
 			continue
 		num = float(text)
@@ -58,20 +58,16 @@ def confirm(prompt, default=None):
 		defa = 'y/n'
 	elif not default:
 		defa = 'y/[n]'
-	inp = col_input("%s(%s): " % (prompt, defa)).strip()
-	if inp == '' and default is not None:
-		return default
-	return 'y' in inp.lower()
+	inp = col_input(f"{prompt}({defa}): ").strip()
+	return default if inp == '' and default is not None else 'y' in inp.lower()
 
 
 def string(prompt, auto_strip=True):
 	""" Prompts the user, just like *col_input()*, but returns None if nothing was input. """
-	ret = col_input("%s: " % prompt)
+	ret = col_input(f"{prompt}: ")
 	if auto_strip:
 		ret = ret.strip()
-	if ret == '':
-		return None
-	return ret
+	return None if ret == '' else ret
 
 
 def pause():
@@ -83,7 +79,7 @@ def pause():
 if __name__ == '__main__':
 	print(prompt_list('Test non-tuple:', ['one', 'two', 'three'], allow_none=True))
 	ans = prompt_list('Available Modules:', [('Module one', 'one'), ('Module two', 'two'), ('Module three', 'three')])
-	print("Chose: %s" % ans)
+	print(f"Chose: {ans}")
 
 	print(confirm("Everything look good?", True))
 	print(confirm("No default confirmation: ", None))

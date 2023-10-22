@@ -47,7 +47,7 @@ class Filter:
 			Automatically casts numeric values if possible, then compares.
 		"""
 		if not hasattr(obj, self.field):
-			raise Exception('No field: %s' % self.field)  # !cover
+			raise Exception(f'No field: {self.field}')
 		val = self._cast(getattr(obj, self.field))
 		lim = self.get_limit()
 		if isinstance(val, str) or isinstance(lim, str):  # Case doesn't matter for the basic comparisons.
@@ -61,10 +61,8 @@ class Filter:
 			return val == lim
 		if self.operator == filters.Operators.MATCH:
 			regexp = re.compile(str(self.get_limit()), re.IGNORECASE)
-			if regexp.search(str(val)):
-				return True
-			return False
-		raise Exception("Invalid comparator for Filter! %s" % self.operator)  # !cover
+			return bool(regexp.search(str(val)))
+		raise Exception(f"Invalid comparator for Filter! {self.operator}")
 
 	def _cast(self, val):
 		"""  Attempt to cast to integer, or just return the value as a string.  """
@@ -123,15 +121,13 @@ class Filter:
 		if self._validate_operator(op):
 			self.operator = op
 		else:
-			raise Exception('Unable to parse operator for Filter: %s' % self.field)
+			raise Exception(f'Unable to parse operator for Filter: {self.field}')
 		return True
 
 	def _validate_operator(self, op, return_value=False):
 		"""  Returns if this operator is a valid operator string or not. If set, returns mapped value. """
 		if op in filters.Operators:
-			if return_value:
-				return op.value
-			return True
+			return op.value if return_value else True
 		return False
 
 	def _get_operator_from_str(self, val):
@@ -143,12 +139,7 @@ class Filter:
 	def __str__(self):
 		lim = self._limit
 		if isinstance(lim, str):
-			lim = '"%s"' % lim
+			lim = f'"{lim}"'
 		if self.operator is None or lim is None:
-			return "Filter: %s (%s)" % (self.field, self.description)
-		return "Filter: %s %s %s (%s)" % (
-			self.field,
-			self.operator.value.replace('.', ''),
-			lim,
-			self.description
-		)
+			return f"Filter: {self.field} ({self.description})"
+		return f"Filter: {self.field} {self.operator.value.replace('.', '')} {lim} ({self.description})"

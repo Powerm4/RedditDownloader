@@ -15,7 +15,9 @@ def handle(task, progress):
 	ext, stat = http_downloader.is_media_url(url, return_status=True)
 
 	if stat != 200:
-		return HandlerResponse(success=False, handler=tag, failure_reason="URL Responded: %s" % stat)
+		return HandlerResponse(
+			success=False, handler=tag, failure_reason=f"URL Responded: {stat}"
+		)
 	if not ext:
 		return False
 

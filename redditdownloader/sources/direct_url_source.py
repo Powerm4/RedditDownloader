@@ -30,7 +30,7 @@ class DirectURLSource(Source):
 				if self.check_filters(p):
 					yield p
 		else:
-			raise TypeError('Invalid Reddit URL provided! "%s"' % url)
+			raise TypeError(f'Invalid Reddit URL provided! "{url}"')
 
 	def get_config_summary(self):
 		return self.data

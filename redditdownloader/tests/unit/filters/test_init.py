@@ -19,7 +19,7 @@ class FilterInitTest(unittest.TestCase):
 		""" Assure that all filterable fields are properly loaded as Filters """
 		loaded = [f.field for f in filters.get_filters(filter_dict=None)]
 		for field in self.fields:
-			self.assertIn(field, loaded, "Missing filter for field: %s" % field)
+			self.assertIn(field, loaded, f"Missing filter for field: {field}")
 
 	def test_load(self):
 		""" Test loading Filters using the string/dict notation """
@@ -28,5 +28,7 @@ class FilterInitTest(unittest.TestCase):
 
 		for f in self.fields:
 			for op in filters.Operators:
-				fi = filters.get_filters(filter_dict={"%s.%s" % (f, op.value): 1})[0]
-				self.assertEqual(fi.operator, op, "Filter %s failed to load with operator %s" % (f, op))
+				fi = filters.get_filters(filter_dict={f"{f}.{op.value}": 1})[0]
+				self.assertEqual(
+					fi.operator, op, f"Filter {f} failed to load with operator {op}"
+				)

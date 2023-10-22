@@ -21,10 +21,8 @@ class URL(sql.Base):
 	file = relationship("File", back_populates="urls")
 
 	def __repr__(self):
-		failure = ""
-		if self.failed:
-			failure = ', Failed, Reason: "%s"' % self.failure_reason
-		return "<URL ID: %s, Address: %s, Downloaded: %s %s>" % (self.id, self.address, self.processed, failure)
+		failure = f', Failed, Reason: "{self.failure_reason}"' if self.failed else ""
+		return f"<URL ID: {self.id}, Address: {self.address}, Downloaded: {self.processed} {failure}>"
 
 	@staticmethod
 	def make_url(address, post, album_key, album_order):

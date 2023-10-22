@@ -30,7 +30,9 @@ class TerminalUI(UserInterface):
 			except AttributeError:
 				os.system('cls' if os.name == 'nt' else 'clear')
 		scanning = '+' if prog.loader.get_scanning() else ''
-		print("Remaining: %s/%s%s" % (prog.loader.get_queue_size(), prog.loader.get_found(), scanning))
+		print(
+			f"Remaining: {prog.loader.get_queue_size()}/{prog.loader.get_found()}{scanning}"
+		)
 		rj = 10
 		for progress in prog.downloaders:
 			print()

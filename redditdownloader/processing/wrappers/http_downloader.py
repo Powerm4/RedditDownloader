@@ -64,9 +64,11 @@ def download_binary(url, rel_file, prog, handler_id):
 	try:
 		req = open_request(url, stream=True)
 		if not req or req.status_code != 200:
-			return HandlerResponse(success=False,
-								   handler=handler_id,
-								   failure_reason="Server Error: %s->%s" % (url, req.status_code if req is not None else None))
+			return HandlerResponse(
+				success=False,
+				handler=handler_id,
+				failure_reason=f"Server Error: {url}->{req.status_code if req is not None else None}",
+			)
 		size = req.headers.get('content-length')
 		if size:
 			size = int(size)
@@ -90,7 +92,11 @@ def download_binary(url, rel_file, prog, handler_id):
 		print(ex)
 		if rel_file.exists():
 			rel_file.delete_file()
-		return HandlerResponse(success=False, handler=handler_id, failure_reason="Error Downloading: %s" % ex)
+		return HandlerResponse(
+			success=False,
+			handler=handler_id,
+			failure_reason=f"Error Downloading: {ex}",
+		)
 
 
 def page_text(url, json=False):
@@ -99,8 +105,6 @@ def page_text(url, json=False):
 		req = open_request(url)
 		if req.status_code != 200:
 			return None
-		if json:
-			return req.json()
-		return req.text
+		return req.json() if json else req.text
 	except Exception:
 		return None

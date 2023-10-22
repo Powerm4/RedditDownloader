@@ -23,7 +23,7 @@ class SqlitePostSearcherTest(EnvironmentTest):
 		self.assertGreater(len(self.ps.get_searchable_fields()), 1, msg="Didn't find enough searchable fields!")
 		for f in self.ps.get_searchable_fields():
 			self.assertIn(f, sql.Post.__dict__.keys(), msg="Invalid searchable field!")
-			self.assertFalse(f.startswith('_'), msg='Invalid field was detected: %s' % f)
+			self.assertFalse(f.startswith('_'), msg=f'Invalid field was detected: {f}')
 
 	def test_post_search_author(self):
 		""" Posts should be searchable """
@@ -44,7 +44,9 @@ class SqlitePostSearcherTest(EnvironmentTest):
 		""" All valid fields should search """
 		for f in self.ps.get_searchable_fields():
 			posts = self.ps.search_field_conditions([f], 'testuser')
-			self.assertEqual(1, len(posts), msg="Failed to generate search term for '%s'!" % f)
+			self.assertEqual(
+				1, len(posts), msg=f"Failed to generate search term for '{f}'!"
+			)
 
 	def test_post_json_encode(self):
 		""" Posts should serialize """
@@ -55,17 +57,17 @@ class SqlitePostSearcherTest(EnvironmentTest):
 		self.assertGreater(len(arr), 0, msg='Failed to decode array of posts.')
 		for p in arr:
 			for f in self.ps.get_searchable_fields():
-				self.assertIn(f, p, msg='Field was missing from decoded Post: %s' % f)
+				self.assertIn(f, p, msg=f'Field was missing from decoded Post: {f}')
 
 	def test_full_encode(self):
 		""" The entire nested relation should serialize """
 		p = sql.session().query(sql.Post).join(sql.URL).join(sql.File).first()
 		self.assertTrue(p, msg='Failed to find a test Post.')
 		for u in p.urls:
-			self.assertTrue(u.file, msg="URL is missing a file! %s" % u)  # These are lazy loaded, so check them all.
+			self.assertTrue(u.file, msg=f"URL is missing a file! {u}")
 		ser = sql.encode_safe(p)
 
 		self.assertTrue(ser, msg='Failed to properly encode full stack Post into Object!')
 		self.assertGreater(len(ser['urls']), 0, msg='Lost Post URLs in encode!')
 		for u in ser['urls']:
-			self.assertIn('file', u, msg='Lost file in URL encode! %s' % u)
+			self.assertIn('file', u, msg=f'Lost file in URL encode! {u}')

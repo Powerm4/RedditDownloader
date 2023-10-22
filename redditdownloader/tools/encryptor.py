@@ -45,12 +45,11 @@ class Cryptor:
 
 	def decrypt(self, file, file_out):
 		try:
-			file_in = open(file, "rb")
-			nonce, tag, ciphertext = [file_in.read(x) for x in (16, 16, -1)]
-			cipher = AES.new(self.key, AES.MODE_EAX, nonce)
-			data = cipher.decrypt_and_verify(ciphertext, tag)
-			os.makedirs(os.path.dirname(file_out), exist_ok=True)
-			file_in.close()
+			with open(file, "rb") as file_in:
+				nonce, tag, ciphertext = [file_in.read(x) for x in (16, 16, -1)]
+				cipher = AES.new(self.key, AES.MODE_EAX, nonce)
+				data = cipher.decrypt_and_verify(ciphertext, tag)
+				os.makedirs(os.path.dirname(file_out), exist_ok=True)
 			with open(file_out, 'wb') as o:
 				o.write(data)
 		except Exception as ex:
@@ -67,8 +66,8 @@ if __name__ == '__main__':
 	f_out = sys.argv[3]
 	if 'enc' in mode.lower():
 		en.encrypt(f_in, f_out, True)
-		print('Encrypted file [%s] into [%s]' % (f_in, f_out))
+		print(f'Encrypted file [{f_in}] into [{f_out}]')
 	else:
 		en.decrypt(f_in, f_out)
-		print('Decrypted file into: %s' % f_out)
+		print(f'Decrypted file into: {f_out}')
 

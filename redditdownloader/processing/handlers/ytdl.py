@@ -49,11 +49,11 @@ class YTDLWrapper:
 			'logger': Logger(),
 			'progress_hooks': [self.ytdl_hook],
 			'noplaylist': True,
-			'outtmpl': tmp_file + '.%(ext)s',  # single_file only needs the extension.
+			'outtmpl': f'{tmp_file}.%(ext)s',
 			'http_headers': {'User-Agent': settings.get('auth.user_agent')},
 			'socket_timeout': 10,
 			'format': 'bestvideo+bestaudio/best',
-			'ffmpeg_location': ffmpeg_download.install_local()
+			'ffmpeg_location': ffmpeg_download.install_local(),
 		}
 		failed = False
 		try:
@@ -62,12 +62,12 @@ class YTDLWrapper:
 				ydl.download([url])
 		except Exception as ex:
 			if 'unsupported url' not in str(ex).lower():
-				print('YTDL:', ex, '[%s]' % url, file=sys.stderr, flush=True)
+				print('YTDL:', ex, f'[{url}]', file=sys.stderr, flush=True)
 				time.sleep(1)  # Give YTDL time to shut down before deleting file parts.
 			failed = True
 
 		# YTDL can mangle paths, so find the temp file it generated.
-		tmp_file = glob.glob('%s/**/%s.*' % (file.absolute_base(), tmp_hash), recursive=True)
+		tmp_file = glob.glob(f'{file.absolute_base()}/**/{tmp_hash}.*', recursive=True)
 		if tmp_file:
 			for t in tmp_file:
 				self.files.add(t)

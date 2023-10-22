@@ -1,6 +1,7 @@
 """
 	Builds the Docs that need to be auto-generated for RMD.
 """
+
 import sys
 import os
 
@@ -10,8 +11,6 @@ sys.path.insert(0, dr)
 from static import settings
 
 
-# ================== Settings =========================================
-tmpvars = {}
 sl = './docs/Advanced_Usage/Settings_List.md'
 
 default_override = {
@@ -37,14 +36,13 @@ for item in settings.get_all():
 		sets += '    + **Options:** \n'
 		for o in item.opts:
 			sets += '        + %s - *%s* \n' % o
-tmpvars['settings_list'] = sets
-
+tmpvars = {'settings_list': sets}
 with open(sl, 'r') as r:
 	tmp = r.read()
 
 with open(sl, 'w') as o:
 	for k, v in tmpvars.items():
-		tmp = tmp.replace('[%s]' % k, v)
+		tmp = tmp.replace(f'[{k}]', v)
 	o.write(tmp)
 
 print('+Built Docs Settings-List file!')

@@ -24,4 +24,4 @@ class StringUtilTest(unittest.TestCase):
 	def test_print_color(self):
 		""" All colors should print without throwing """
 		for c in su._special_colors.keys():
-			su.print_color(c, 'Test Color Print %s' % c)
+			su.print_color(c, f'Test Color Print {c}')

@@ -39,7 +39,7 @@ def _init(db_path=":memory:"):
 	global _engine, _Session, _sqlite_uri, _db_path
 	if _Session and _engine:
 		return
-	_sqlite_uri = 'sqlite:///%s' % db_path
+	_sqlite_uri = f'sqlite:///{db_path}'
 	create_new = False
 	if db_path != ':memory:':
 		db_path = os.path.abspath(db_path)
@@ -99,7 +99,7 @@ class make_backup(object):
 		self.original_path = original_path
 
 	def __enter__(self):
-		self.bkup_path = self.original_path + '-bkup.sqlite'
+		self.bkup_path = f'{self.original_path}-bkup.sqlite'
 		shutil.copy2(self.original_path, self.bkup_path)
 		return self.bkup_path
 
@@ -133,7 +133,9 @@ def _run_migrations(conn) -> None:
 		_check_legacy(conn)
 		alembic_cfg, script_, context = get_alembic_ctx(conn)
 		if context.get_current_revision() != script_.get_current_head():
-			print('Database is not up to date! %s < %s' % (context.get_current_revision(), script_.get_current_head()))
+			print(
+				f'Database is not up to date! {context.get_current_revision()} < {script_.get_current_head()}'
+			)
 			with make_backup(_db_path):
 				# noinspection PyBroadException
 				try:
@@ -181,8 +183,11 @@ class Searcher:
 	def search_field_conditions(self, search_fields, term):
 		term = str(term).strip("%")
 		ok_fields = self.get_searchable_fields()
-		conds = [getattr(self.clazz, field).like("%" + term + "%") for field in search_fields if field in ok_fields]
-		return conds
+		return [
+			getattr(self.clazz, field).like(f"%{term}%")
+			for field in search_fields
+			if field in ok_fields
+		]
 
 
 class PostSearcher(Searcher):
@@ -234,10 +239,7 @@ def encode_safe(obj, stringify=False, indent=None):
 		Encode the given object(s), into new Objects that are safe for serialization.
 		Supports automatic JSON encoding, single DB objects, or lists of DB Objects.
 	"""
-	if _iterable(obj):
-		obj = [_encode_obj(o) for o in obj]
-	else:
-		obj = _encode_obj(obj)
+	obj = [_encode_obj(o) for o in obj] if _iterable(obj) else _encode_obj(obj)
 	if stringify:
 		obj = json.dumps(obj, indent=indent)
 	return obj

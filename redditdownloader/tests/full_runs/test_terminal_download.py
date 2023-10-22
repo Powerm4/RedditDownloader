@@ -55,13 +55,13 @@ class TerminalDownloadTest(EnvironmentTest):
 		files = session.query(sql.File).filter(sql.File.downloaded).all()
 		for f in files:
 			path = join(settings.get('output.base_dir'), f.path)
-			self.assertTrue(isfile(path), "File does not exist: %s" % path)
+			self.assertTrue(isfile(path), f"File does not exist: {path}")
 
 	def test_urls_processed(self):
 		""" All URLS should have been processed """
 		urls = session.query(sql.URL).all()
 		for u in urls:
-			self.assertTrue(u.processed, 'A URL was not processed: %s' % u.address)
+			self.assertTrue(u.processed, f'A URL was not processed: {u.address}')
 
 	def test_urls_albums(self):
 		""" All album URLs should have children """
@@ -71,22 +71,26 @@ class TerminalDownloadTest(EnvironmentTest):
 		self.assertGreater(len(ch), 0, 'No children album URLS were found.')
 		for u in urls:
 			children = session.query(sql.URL).filter(sql.URL.album_id).filter(sql.URL.album_is_parent == False).all()
-			self.assertGreater(len(children), 0, 'An album parent has no children: %s' % u.address)
+			self.assertGreater(
+				len(children), 0, f'An album parent has no children: {u.address}'
+			)
 
 	def test_url_files(self):
 		""" Album parent Files should be properly downloaded or ignored """
 		urls = session.query(sql.URL).all()
 		for u in urls:
 			if u.album_is_parent:
-				self.assertFalse(u.file.downloaded, "An Album Parent URL has a file attached: %s" % u)
+				self.assertFalse(
+					u.file.downloaded, f"An Album Parent URL has a file attached: {u}"
+				)
 			else:
-				self.assertTrue(u.file.downloaded, "A child URL has no File: %s" % u)
+				self.assertTrue(u.file.downloaded, f"A child URL has no File: {u}")
 
 	def test_file_hashes(self):
 		""" All downloaded Files should have a hash from deduplication """
-		urls = session.query(sql.URL).filter(sql.URL.album_id == None).all()
+		urls = session.query(sql.URL).filter(sql.URL.album_id is None).all()
 		files = [u.file for u in urls]
 		self.assertGreater(len(files), 0, 'No non-album files were located!')
 		for f in files:
 			if f.downloaded:
-				self.assertTrue(f.hash, 'File is missing a hash: %s' % f)
+				self.assertTrue(f.hash, f'File is missing a hash: {f}')

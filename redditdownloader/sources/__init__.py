@@ -36,12 +36,11 @@ def load_sources(source_list=None):
 	loaded = []
 	if source_list is None:
 		return all_sources()
-	else:
-		for s in source_list:
-			for l in all_sources() + [DirectInputSource(), DirectURLSource(), DirectFileSource()]:
-				if l.from_obj(s):
-					loaded.append(l)
-					break
-			else:
-				raise Exception("Unable to load Source: %s" % s)
+	for s in source_list:
+		for l in all_sources() + [DirectInputSource(), DirectURLSource(), DirectFileSource()]:
+			if l.from_obj(s):
+				loaded.append(l)
+				break
+		else:
+			raise Exception(f"Unable to load Source: {s}")
 	return loaded

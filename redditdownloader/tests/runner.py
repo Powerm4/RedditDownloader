@@ -19,7 +19,7 @@ def run_tests(test_subdir):
 		subdir = 'redditdownloader/tests/'
 
 	test_path = os.path.join(application_path, subdir, test_subdir)
-	print("Running tests in %s" % test_path)
+	print(f"Running tests in {test_path}")
 
 	tests = unittest.TestLoader().discover(test_path, top_level_dir=application_base)
 	stats = unittest.TextTestRunner(verbosity=2, buffer=True).run(tests)

@@ -22,7 +22,11 @@ class FilterTest(unittest.TestCase):
 		""" Filters should auto-cast limits to int """
 		for lim in [1, '234', -100, '-200']:
 			self.filter.set_limit(lim)
-			self.assertEqual(int(lim), self.filter.get_limit(), "Limit mismatch: %s!=%s" % (lim, self.filter.get_limit()))
+			self.assertEqual(
+				int(lim),
+				self.filter.get_limit(),
+				f"Limit mismatch: {lim}!={self.filter.get_limit()}",
+			)
 		self.filter.set_limit('test')
 		self.assertEqual('test', self.filter.get_limit(), "String set failed for Filter limit.")
 

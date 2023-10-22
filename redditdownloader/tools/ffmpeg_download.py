@@ -19,13 +19,10 @@ _lock = Lock()
 _versions = ['32', '64']
 _os_opts = [('win', 'windows', 'ffmpeg.exe'), ('darwin', 'osx', 'ffmpeg'), ('linux', 'linux', 'ffmpeg')]
 
-_os_version = '32'
 _os_filename = None
-for _v in _versions:
-	if platform.machine().endswith(_v):
-		_os_version = _v
-		break
-
+_os_version = next(
+	(_v for _v in _versions if platform.machine().endswith(_v)), '32'
+)
 _current_os = None
 for _o in _os_opts:
 	if _o[0] in platform.system().lower():
@@ -34,15 +31,14 @@ for _o in _os_opts:
 
 
 def _find_ffmpeg(abs_dir):
-	match = glob.glob('%s*' % join(abs_dir, 'ffmpeg'))
+	match = glob.glob(f"{join(abs_dir, 'ffmpeg')}*")
 	return match[0] if match else None
 
 
 def _dl_binary(output_dir, verbose=True):
 	output_dir = abspath(output_dir)
 	output_zip = RelFile(base=output_dir, file_path='tmp-ffmpeg.zip')
-	found = _find_ffmpeg(output_dir)
-	if found:
+	if found := _find_ffmpeg(output_dir):
 		return found
 	os.makedirs(output_dir, exist_ok=True)
 	if verbose:
@@ -52,8 +48,8 @@ def _dl_binary(output_dir, verbose=True):
 	match = None
 	possible = None
 	for plat in sorted(dat['bin'].keys()):
-		files = dat['bin'][plat]
 		if _current_os in plat:
+			files = dat['bin'][plat]
 			if _os_version in plat:
 				match = files
 				break
@@ -64,15 +60,14 @@ def _dl_binary(output_dir, verbose=True):
 		raise Exception("Unable to locate possible FFmpeg archive match!")
 	url = matches[0]['ffmpeg']
 	if verbose:
-		print("Downloading ffmpeg zip archive from: %s" % url)
+		print(f"Downloading ffmpeg zip archive from: {url}")
 	r = requests.get(url, stream=True)
-	if r.status_code == 200:
-		with open(output_zip.absolute(), 'wb') as f:
-			r.raw.decode_content = True
-			shutil.copyfileobj(r.raw, f)
-	else:
+	if r.status_code != 200:
 		raise Exception("Unable to download FFmpeg archive!")
 
+	with open(output_zip.absolute(), 'wb') as f:
+		r.raw.decode_content = True
+		shutil.copyfileobj(r.raw, f)
 	with ZipFile(output_zip.absolute(), 'r') as z:
 		extracted = abspath(z.extract(_os_filename, path=output_dir))
 		if not extracted:
@@ -86,8 +81,7 @@ def _dl_binary(output_dir, verbose=True):
 def install_local(local_dir=None, verbose=True, force_download=False):
 	""" Returns the absolute path to RMD's local ffmpeg binary, downloading the binary if required. None on error. """
 	if not force_download:
-		existing = shutil.which("ffmpeg")
-		if existing:
+		if existing := shutil.which("ffmpeg"):
 			return abspath(existing)
 	_lock.acquire()
 	try:

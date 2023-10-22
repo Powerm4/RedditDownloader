@@ -36,7 +36,7 @@ class WebUI(UserInterface):
 		return started and not stopped
 
 	def waitFor(self, max_time=10):
-		for i in range(max_time*10):
+		for _ in range(max_time*10):
 			sleep(.1)
 			if self.running:
 				return True
@@ -77,16 +77,19 @@ def start(web_dir):
 	if browser:
 		print('Awaiting connection from browser...')
 	else:
-		print('Browser auto-opening is disabled! Please open a browser to http://%s:%s/index.html !' %
-			  (options['host'], options['port']))
+		print(
+			f"Browser auto-opening is disabled! Please open a browser to http://{options['host']}:{options['port']}/index.html !"
+		)
 	started = True
 	return True
 
 
 def _websocket_close(page, old_websockets):
 	global stopped
-	print('A WebUI just closed. Checking for other connections... (%s)[%s]' % (page, len(old_websockets)))
-	for i in range(40):
+	print(
+		f'A WebUI just closed. Checking for other connections... ({page})[{len(old_websockets)}]'
+	)
+	for _ in range(40):
 		eel.sleep(.1)
 		# noinspection PyProtectedMember
 		if len(eel._websockets) > 0:
@@ -136,8 +139,7 @@ def _authorize_rmd_token():
 	if state.strip() == settings.get('auth.oauth_key').strip():
 		code = eel.btl.request.query.code
 		print('Saving new reddit code.')
-		refresh = praw_wrapper.get_refresh_token(code)
-		if refresh:
+		if refresh := praw_wrapper.get_refresh_token(code):
 			settings.put('auth.refresh_token', refresh)
 			praw_wrapper.init()
 			praw_wrapper.login()
@@ -272,23 +274,21 @@ def start_download():
 	global _controller, _stat_cache
 	if _controller is not None and _controller.is_running():
 		return False
-	else:
-		_controller = RMDController()
-		_controller.start()
-		_stat_cache = None
-		print('Started downloader.')
-		return True
+	_controller = RMDController()
+	_controller.start()
+	_stat_cache = None
+	print('Started downloader.')
+	return True
 
 @eel.expose
 def stop_download():
 	global _controller
-	if _controller is not None and _controller.is_running():
-		_controller.stop()
-		_controller = None
-		print('Stopped downloader.')
-		return True
-	else:
+	if _controller is None or not _controller.is_running():
 		return False
+	_controller.stop()
+	_controller = None
+	print('Stopped downloader.')
+	return True
 
 
 @eel.expose

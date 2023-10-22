@@ -33,7 +33,7 @@ class UserUpvotedSaved(source.Source):
 		if self.data['scan_upvoted']:
 			feeds += "Upvoted"
 		if self.data['scan_saved']:
-			if len(feeds) > 0:
+			if feeds != "":
 				feeds += " & "
 			feeds += "Saved"
-		return 'Scanning all the Posts the Redditor "%s" has %s.' % (self.data['user'], feeds)
+		return f"""Scanning all the Posts the Redditor "{self.data['user']}" has {feeds}."""

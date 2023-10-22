@@ -25,11 +25,10 @@ class DirectInputSource(Source):
 				s.set(args[s.name])  # Forces type conversion.
 				self.src.insert_data(s.name, s.val())
 
-		for p in self.src.get_elements():
-			yield p
+		yield from self.src.get_elements()
 
 	def _sanitize(self, tag, txt):
-		return txt.replace('/%s/' % tag, '').replace('%s/' % tag, '').strip('/')
+		return txt.replace(f'/{tag}/', '').replace(f'{tag}/', '').strip('/')
 
 	def get_config_summary(self):
 		return self.src.get_config_summary() if self.src else self.data

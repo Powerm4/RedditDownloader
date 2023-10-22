@@ -17,11 +17,11 @@ _special_colors = {
 def html_elements(html_string, tag='a', tag_val='href'):
 	""" Get all the href elements from this HTML string. """
 	soup = BeautifulSoup(html_string, 'html.parser')
-	urls = []
-	for link in soup.findAll(tag):
-		if link.get(tag_val):
-			urls.append(str(link.get(tag_val)).strip())
-	return urls
+	return [
+		str(link.get(tag_val)).strip()
+		for link in soup.findAll(tag)
+		if link.get(tag_val)
+	]
 
 
 def error(string_output, **kwargs):
@@ -38,7 +38,7 @@ def print_color(fore_color, string_output, end='\n'):
 	"""
 	if fore_color.lower() in _special_colors:
 		fore_color = _special_colors[fore_color]
-	st = "%s%s" % (fore_color+Style.BRIGHT, string_output) + end
+	st = f"{fore_color + Style.BRIGHT}{string_output}{end}"
 	sys.stdout.write(st)
 
 

@@ -29,7 +29,9 @@ class PrawWrapperTest(EnvironmentTest):
 			"source_alias": None,
 		}
 		for k, v in vals.items():
-			self.assertEqual(getattr(re, k), v, msg='%s was not properly set in Comment!' % k.title())
+			self.assertEqual(
+				getattr(re, k), v, msg=f'{k.title()} was not properly set in Comment!'
+			)
 
 	def test_load_submission(self):
 		""" Load submission directly by ID """
@@ -44,11 +46,11 @@ class PrawWrapperTest(EnvironmentTest):
 		re = RedditElement(p)
 		self.assertEqual(len(re.get_urls()), 3, msg='Got incorrect image count from reddit gallery submission!')
 		for url in re.get_urls():
-			self.assertIn('https', url, msg='Failed to extract valid gallery URL: %s' % url)
+			self.assertIn('https', url, msg=f'Failed to extract valid gallery URL: {url}')
 
 	def test_frontpage_load(self):
 		""" Load frontpage Submissions """
-		posts = [p for p in pw.frontpage_posts(limit=3)]
+		posts = list(pw.frontpage_posts(limit=3))
 		self.assertEqual(len(posts), 3, msg="PRAW found the wrong number of posts.")
 
 	def test_liked_saved(self):
@@ -61,11 +63,19 @@ class PrawWrapperTest(EnvironmentTest):
 
 	def test_subreddit_submissions(self):
 		""" Load submissions from a subreddit """
-		self.assertGreater(len([p for p in pw.subreddit_posts('shadow_test_sub', limit=5)]), 3, msg='Loaded too few Posts.')
+		self.assertGreater(
+			len(list(pw.subreddit_posts('shadow_test_sub', limit=5))),
+			3,
+			msg='Loaded too few Posts.',
+		)
 
 	def test_user_posts(self):
 		""" Load test user posts """
-		posts = [p for p in pw.user_posts('test_reddit_scraper', find_comments=True, find_submissions=True)]
+		posts = list(
+			pw.user_posts(
+				'test_reddit_scraper', find_comments=True, find_submissions=True
+			)
+		)
 		for p in posts:
 			self.assertEqual(p.author, 'test_reddit_scraper', msg='Invalid Post author!')
 
@@ -89,4 +99,4 @@ class PrawWrapperTest(EnvironmentTest):
 		""" All post orders should find a result from a subreddit """
 		for order, time in pw.post_orders()+[('best', False)]:
 			post = next(pw.subreddit_posts('funny', order, 1, 'all'))
-			self.assertTrue(post, msg="Failed to find '%s' post." % order)
+			self.assertTrue(post, msg=f"Failed to find '{order}' post.")

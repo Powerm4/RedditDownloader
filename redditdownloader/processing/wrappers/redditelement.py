@@ -42,7 +42,7 @@ class RedditElement(object):
 		self.link_count = len(self._urls)
 		self.source_alias = None
 
-		assert self.type == 'Submission' or self.type == 'Comment'
+		assert self.type in ['Submission', 'Comment']
 		assert self.id is not None
 		assert not self.parent or 't3_' in self.parent
 		assert 't1_' in self.id or 't3_' in self.id
@@ -61,7 +61,7 @@ class RedditElement(object):
 		elif 'comment' in stp:
 			self._ps_comment(obj)
 		else:
-			raise Exception('Unknown Element Type: '+str(type(obj)))
+			raise Exception(f'Unknown Element Type: {str(type(obj))}')
 	
 	def _comment(self, c):
 		""" Handle a Comment object. """
@@ -71,10 +71,7 @@ class RedditElement(object):
 		self.parent = self._comment_field(c, 'link_id', 'fullname')
 		self.title = self._comment_field(c, 'link_title', 'title')
 		self.subreddit = str(c.subreddit.display_name)
-		if c.author:
-			self.author = str(c.author.name)
-		else:
-			self.author = 'Deleted'
+		self.author = str(c.author.name) if c.author else 'Deleted'
 		self.over_18 = self._comment_field(c, 'over_18', 'over_18')
 		self.num_comments = self._comment_field(c, 'num_comments', 'num_comments')
 		self.score = self._comment_field(c, 'score', 'score')
@@ -88,7 +85,7 @@ class RedditElement(object):
 		self.type = 'Comment'
 		self.id = c.id
 		if 't1_' not in self.id:
-			self.id = 't1_%s' % self.id
+			self.id = f't1_{self.id}'
 		self.parent = self._comment_field(c, 'link_id', 'fullname')
 		self.title = self._comment_field(c, 'link_title', 'title')
 		self.subreddit = c.subreddit
@@ -117,10 +114,7 @@ class RedditElement(object):
 		self.id = str(post.fullname)
 		self.title = str(post.title)
 		self.subreddit = str(post.subreddit.display_name)
-		if post.author is None:
-			self.author = 'Deleted'
-		else:
-			self.author = str(post.author.name)
+		self.author = 'Deleted' if post.author is None else str(post.author.name)
 		self.over_18 = post.over_18
 		self.num_comments = post.num_comments
 		self.score = post.score
@@ -143,7 +137,7 @@ class RedditElement(object):
 		self.type = 'Submission'
 		self.id = post.id
 		if 't3_' not in self.id:
-			self.id = 't3_%s' % self.id
+			self.id = f't3_{self.id}'
 		self.title = post.title
 		self.subreddit = post.subreddit
 		if getattr(post, 'author', None) is None or post.author == '[deleted]':
@@ -169,12 +163,11 @@ class RedditElement(object):
 	def _comment_field(self, obj, attr, backup):
 		if hasattr(obj, attr):
 			return getattr(obj, attr)
-		else:
-			sub = self._get_submission_obj(obj)
-			val = getattr(sub, backup)
-			if sub == self._ext_submission and isinstance(val, str):
-				return html.unescape(val)
-			return val
+		sub = self._get_submission_obj(obj)
+		val = getattr(sub, backup)
+		if sub == self._ext_submission and isinstance(val, str):
+			return html.unescape(val)
+		return val
 
 	def _get_submission_obj(self, obj):
 		""" Get the "submission" property of the given object, or fall back to the _ext_submission object. """

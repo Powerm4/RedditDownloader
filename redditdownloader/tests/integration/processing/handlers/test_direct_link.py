@@ -8,7 +8,9 @@ class DirectHandlerTest(StagedTest):
 		_task, _prog, _file = mock_handler_request(self.dir, 'https://i.redd.it/lasm5nl33o4x.png')
 		res = direct_link.handle(_task, _prog)
 		self.assertTrue(res, "redd.it png download failed!")
-		self.assertTrue(_file.exists(), "redd.it png was not downloaded! %s" % res.failure_reason)
+		self.assertTrue(
+			_file.exists(), f"redd.it png was not downloaded! {res.failure_reason}"
+		)
 		self.assertIn('.png', _file.relative(), "redd.it png is missing extension!")
 
 	def test_404_download(self):

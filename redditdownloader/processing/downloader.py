@@ -50,15 +50,11 @@ class Downloader(multiprocessing.Process):
 				is_album_parent = False
 
 				with self._db_lock:
-					if resp.album_urls:
-						if url.album_id:
-							resp.album_urls = []  # Ignore nested Albums to avoid recursion.
-						else:
-							url.album_id = str(uuid.uuid4())
-							is_album_parent = True
+					if resp.album_urls and url.album_id or not resp.album_urls:
+						resp.album_urls = []  # Ignore nested Albums to avoid recursion.
 					else:
-						resp.album_urls = []
-
+						url.album_id = str(uuid.uuid4())
+						is_album_parent = True
 					url.failed = not resp.success
 					url.failure_reason = resp.failure_reason
 					url.last_handler = resp.handler
@@ -91,4 +87,7 @@ class Downloader(multiprocessing.Process):
 				break
 
 		sql.close()
-		self.progress.clear("Finished." if not failed else "Exited with error: %s" % failed, running=False)
+		self.progress.clear(
+			"Finished." if not failed else f"Exited with error: {failed}",
+			running=False,
+		)

@@ -29,11 +29,6 @@ class PushShiftSearchSource(source.Source):
 
 	def get_config_summary(self):
 		lim = self.data['limit']
-		if lim > 0:
-			lim = 'the first %s' % lim
-		else:
-			lim = 'all'
-		return 'Downloading %s search results from subreddit(s) "%s".' % (
-			lim, self.data['subreddits']
-		)
+		lim = f'the first {lim}' if lim > 0 else 'all'
+		return f"""Downloading {lim} search results from subreddit(s) "{self.data['subreddits']}"."""
 
